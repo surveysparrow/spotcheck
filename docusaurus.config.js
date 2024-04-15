@@ -42,14 +42,14 @@ const config = {
         },
         items: [
           {
-            to: '/docs/Android-Installation',
+            to: '/docs/Web',
             position: 'left',
-            label: 'Installation',
+            label: 'Web',
           },
           {
-            to: '/docs/Android-Integration',
+            to: '/docs/Android',
             position: 'left',
-            label: 'Integration',
+            label: 'Mobile',
           },
           {
             href: 'https://surveysparrow.com',

@@ -1,14 +1,13 @@
 const sidebars = {
   "Getting Started": [
     {
-      type: "category",
-      items: ["Android-Installation", "iOS-Installation", "Flutter-Installation", "ReactNative-Installation"],
-      label: "Installation",
+      type: "doc",
+      id: "Web",
     },
     {
       type: "category",
-      items: ["Android-Integration", "iOS-Integration", "Flutter-Integration", "ReactNative-Integration", "Web-Integration"],
-      label: "Integration",
+      items: ["Android", "iOS", "Flutter", "ReactNative", ],
+      label: "Mobile",
     }
   ],
 };
