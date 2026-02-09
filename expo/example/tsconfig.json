@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "surveysparrow-expo-spotchecks": ["../src/index"],
+      "surveysparrow-expo-spotchecks/*": ["../src/*"]
+    }
+  }
+}
