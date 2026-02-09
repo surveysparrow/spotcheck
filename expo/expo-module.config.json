@@ -4,6 +4,9 @@
     "modules": ["SpotchecksModule"]
   },
   "android": {
-    "modules": ["com.surveysparrow.expo_spotchecks.SpotchecksModule"]
+    "modules": [
+      "com.surveysparrow.expo_spotchecks.SpotchecksModule",
+      "com.surveysparrow.expo_spotchecks.AdjusterModule"
+    ]
   }
 }
