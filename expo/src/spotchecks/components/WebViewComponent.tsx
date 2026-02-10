@@ -41,7 +41,6 @@ export const WebViewComponent: React.FC = () => {
     execute("webviewComponent.handleWebViewInjection");
   }, [state.webViewDetails.isChatLoading, state.webViewDetails.isClassicLoading, state.webViewDetails.webViewInjectionData]);
 
-  // Keyboard listener for offset calculations (matches legacy)
   useEffect(() => {
     const showEvent = Platform.OS === 'android' ? 'keyboardDidShow' : 'keyboardWillShow';
     const hideEvent = Platform.OS === 'android' ? 'keyboardDidHide' : 'keyboardWillHide';
@@ -51,6 +50,9 @@ export const WebViewComponent: React.FC = () => {
         spotCheckDetails: {
           keyBoardHeight: event.endCoordinates.height,
         },
+        webViewDetails: {
+          scrollEnabled: false,
+        },
       });
     });
 
@@ -59,7 +61,18 @@ export const WebViewComponent: React.FC = () => {
         spotCheckDetails: {
           keyBoardHeight: 0,
         },
+        webViewDetails: {
+          scrollEnabled: true,
+        },
       });
+      // Toggle true -> false to force WebView re-layout
+      setTimeout(() => {
+        dispatchWrapper({
+          webViewDetails: {
+            scrollEnabled: false,
+          },
+        });
+      }, 0);
     });
 
     return () => {

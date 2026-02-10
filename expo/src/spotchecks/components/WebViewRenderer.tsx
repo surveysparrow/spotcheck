@@ -11,8 +11,9 @@ export const WebViewRenderer = React.forwardRef<
     onMessage: (event: WebViewMessageEvent) => void;
     onError: (event: WebViewErrorEvent) => void;
     config?: any;
+    scrollEnabled?: boolean;
   }
->(({ canShow, uri, onMessage, onError = () => { }, config }, ref) => {
+>(({ canShow, uri, onMessage, onError = () => { }, config, scrollEnabled = true }, ref) => {
   return uri ? (
     <View
       style={
@@ -31,6 +32,7 @@ export const WebViewRenderer = React.forwardRef<
       <WebView
         ref={ref}
         source={{ uri }}
+        scrollEnabled={scrollEnabled}
         {...config}
         onMessage={onMessage}
         onError={onError}

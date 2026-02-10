@@ -11,7 +11,17 @@ export const Wrapper: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const state = useSelector((state: SpotcheckState) => state.SpotCheckState);
-  const screenHeight = Dimensions.get("window").height;
+
+  const [screenDimensions, setScreenDimensions] = useState(() => Dimensions.get("window"));
+
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener("change", ({ window }) => {
+      setScreenDimensions(window);
+    });
+    return () => subscription.remove();
+  }, []);
+
+  const { height: screenHeight, width: screenWidth } = screenDimensions;
   
   const [styles, setStyles] = useState({
     overlayStyle: {
@@ -32,8 +42,8 @@ export const Wrapper: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   useEffect(() => {
-    execute("wrapper.getWrapperStyles", { screenHeight, setStyles });
-  }, [state.showSpotCheck, state.spotCheckDetails.isMounted, state.spotCheckDetails.currentQuestionHeight, state.spotCheckDetails.isExiting, state.spotCheckDetails.keyBoardHeight, state.spotCheckDetails.textPosition]);
+    execute("wrapper.getWrapperStyles", { screenHeight, screenWidth, setStyles });
+  }, [screenHeight, screenWidth, state.showSpotCheck, state.spotCheckDetails.isMounted, state.spotCheckDetails.currentQuestionHeight, state.spotCheckDetails.isExiting, state.spotCheckDetails.keyBoardHeight, state.spotCheckDetails.textPosition]);
 
   const wrapperSchema = componentState?.schemas?.wrapper;
 

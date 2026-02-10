@@ -1,4 +1,5 @@
 import { combineReducers, configureStore, createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { Dimensions } from 'react-native';
 import { getVisitorInfo } from '../helpers';
 
 const initialState: any = {
@@ -65,6 +66,7 @@ const initialState: any = {
     canShowClassic: false,
     canShowChat: false,
     webViewInjectionData: null,
+    scrollEnabled: true,
     webViewConfig: {
       injectedJavaScript: `
         document.addEventListener('focusin', function(event) {
@@ -72,7 +74,7 @@ const initialState: any = {
             var rect = event.target.getBoundingClientRect();
             var yPosition = rect.y + window.scrollY;
             var webViewHeight = window.innerHeight;
-            var scaledY = (yPosition / webViewHeight) * window.screen.height;
+            var scaledY = (yPosition / webViewHeight) * ${Dimensions.get('window').height};
             window.ReactNativeWebView.postMessage(JSON.stringify({
               type: 'position',
               y: scaledY
@@ -98,6 +100,19 @@ const initialState: any = {
             childList: true,
             subtree: true
           });
+        })();
+
+        (function() {
+          const styleTag = document.createElement("style");
+          styleTag.innerHTML = \`
+            .surveysparrow-chat__wrapper .ss-language-selector--wrapper {
+              margin-right: 45px;
+            }
+            .close-btn-chat--spotchecks {
+              display: none !important;
+            }
+          \`;
+          document.head.appendChild(styleTag);
         })();
       `,
       webviewDebuggingEnabled: true,
