@@ -1,18 +1,29 @@
 {
   "name": "surveysparrow-expo-spotchecks-example",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "index.tsx",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.10.1",
+    "axios": "^1.13.2",
     "expo": "~54.0.33",
+    "expo-router": "~5.1.4",
+    "expo-secure-store": "^15.0.7",
     "expo-status-bar": "~3.0.9",
     "react": "19.1.0",
-    "react-native": "0.81.5"
+    "react-native": "0.81.5",
+    "react-native-gesture-handler": "^2.30.0",
+    "react-native-safe-area-context": "5.4.0",
+    "react-native-screens": "^4.16.0",
+    "react-native-svg": "^15.15.0",
+    "react-native-uuid": "^2.0.3",
+    "react-native-webview": "13.13.5",
+    "react-redux": "^9.2.0"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
