@@ -33,17 +33,23 @@ export const setListener = (listener: SsSpotcheckListener) => {
 export const dispatchWrapper = (stateUpdate: any) => {
   try {
     spotcheckStore.dispatch(updateState(stateUpdate));
-  } catch (error) {
-    console.error("Error dispatching state update:", error);
+  } catch (error: any) {
+    captureP1Error(error, 'GENERAL', {
+      action: 'dispatchWrapper',
+      errorMessage: error?.message,
+    });
   }
 };
 
 export const execute = async (functionName: string, params?: any) => {
+  let func: any;
+  let payload: any;
+
+  // Infrastructure: resolve function and build payload
   try {
     const functionState = functionStore.getState();
 
     if (!functionState.functionState.isLoaded) {
-      console.warn(`Functions not loaded yet. Skipping execution of ${functionName}`);
       return null;
     }
 
@@ -59,7 +65,7 @@ export const execute = async (functionName: string, params?: any) => {
       return null;
     }
 
-    const payload = {
+    payload = {
       params,
       state: spotcheckStore.getState(),
       dispatchWrapper,
@@ -67,9 +73,20 @@ export const execute = async (functionName: string, params?: any) => {
       listener: spotcheckListener,
       sentry: { captureP0Error, captureP1Error },
       keyboard: { pauseDefaultKeyboardBehavior, resumeDefaultKeyboardBehavior },
-    }
+    };
 
-    const func = eval(`(${functionString})`);
+    func = eval(`(${functionString})`);
+  } catch (error: any) {
+    captureP1Error(error, 'GENERAL', {
+      action: 'execute:setup',
+      functionName,
+      errorMessage: error?.message,
+    });
+    return null;
+  }
+
+  // Execution: run the backend function (has its own Sentry)
+  try {
     const result = await func(payload);
     return result;
   } catch (error: any) {

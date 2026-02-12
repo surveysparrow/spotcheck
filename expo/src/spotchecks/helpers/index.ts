@@ -3,7 +3,7 @@ import { VisitorInfo } from "./types";
 import axios from 'axios';
 import { functionStore, updateState as updateFunctionState } from '../state/functionState';
 import { componentStore, updateState as updateComponentState } from '../state/componentState';
-import { captureP0Error } from './sentry';
+import { captureP0Error, captureP1Error } from './sentry';
 
 export const getVisitorInfo = (): VisitorInfo => {
   const { width, height } = Dimensions.get("window");
@@ -31,7 +31,11 @@ export const getUserAgent = async (): Promise<string> => {
     } else if (Platform.OS === 'ios') {
       userAgent += `(${await DeviceInfo.getDeviceName()} - ${DeviceInfo.getModel()} CPU iOS ${String(Platform.Version).replace(/\./g, '_')} like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/537.36`;
     }
-  } catch {
+  } catch (error: any) {
+    captureP1Error(error, 'SDK_INITIALIZATION', {
+      action: 'getUserAgent',
+      errorMessage: error?.message,
+    });
     // Fallback if react-native-device-info is not installed
     const version = String(Platform.Version);
     if (Platform.OS === 'android') {

@@ -519,7 +519,6 @@ const renderNode = (node: SchemaNode, context: BuilderContext, key: string): Rea
 
   const Component = componentRegistry.get(node.type);
   if (!Component) {
-    console.warn(`Component "${node.type}" not in registry`);
     return null;
   }
 

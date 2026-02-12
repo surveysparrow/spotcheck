@@ -65,17 +65,31 @@ export const SpotCheck: React.FC = () => {
 };
 
 export const initializeSpotChecks = async (params: SpotcheckProps) => {
+  // Setup: store params early so Sentry fallback has domainName
   try {
     if (params.listener) {
       setListener(params.listener);
     }
 
     const userAgent = await getUserAgent();
-    spotcheckStore.dispatch(updateState({ params: { userAgent } }));
+    if (params.domainName) {
+      spotcheckStore.dispatch(updateState({ params: { userAgent, domainName: params.domainName } }));
+    } else {
+      spotcheckStore.dispatch(updateState({ params: { userAgent } }));
+    }
+  } catch (error: any) {
+    captureP0Error(error, 'SDK_INITIALIZATION', {
+      action: 'initializeSpotChecks:setup',
+      errorMessage: error?.message,
+    });
+    throw error;
+  }
 
+  // Init: fetch functions and initialize (has its own Sentry)
+  try {
     await getAllSpotcheckFunctions(params.domainName);
     execute("initializeSpotcheckComponent", params);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error initializing spotchecks:", error);
     throw error;
   }
@@ -95,7 +109,7 @@ export const trackScreen = async (
 ) => {
   try {
     execute("trackScreen", { screen, options });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error tracking screen:", error);
     throw error;
   }
@@ -109,7 +123,7 @@ export const trackEvent = async (
 ) => {
   try {
     execute("trackEvent", { screen, event });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error tracking event:", error);
     throw error;
   }
@@ -118,7 +132,7 @@ export const trackEvent = async (
 export const onSpotcheckNavigationChange = () => {
   try {
     execute("handleNavigationChange");
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error handling navigation change:", error);
   }
 };

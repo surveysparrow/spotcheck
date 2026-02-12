@@ -80,71 +80,55 @@ export const initializeSentry = () => {
         expoContextIntegration(),
       ],
       beforeSend: async (event: any) => {
-        const state = spotcheckStore.getState().SpotCheckState;
-        const params = state?.params || {};
-        const error_priority = String(event.tags?.error_priority || 'P1');
-        const errorType = event.tags?.errorType || 'GENERAL';
-        const severity = error_priority === 'P0' ? 'CRITICAL' : 'HIGH';
-        const level = error_priority === 'P0' ? 'fatal' : 'error';
-
-        const payload = {
-          errorMessage: `${
+        // Normalize raw Sentry event into platform-agnostic structure
+        const normalizedEvent = {
+          errorMessage:
             event.message ||
             event.exception?.values?.[0]?.value ||
-            'Unknown error'
-          }`,
-          sdkType: 'react-native',
-          sdkVersion: '1.0.0',
-          tags: {
-            level,
-            error_priority,
-            errorType,
-            severity,
-            ...event.tags,
-          },
-          contexts: {
-            user: {
-              spotcheck_token: params.targetToken || '',
-              spotcheck_domain_name: params.domainName || '',
-            },
-            ...(event.contexts || {}),
-          },
+            'Unknown error',
+          tags: event.tags || {},
+          contexts: event.contexts || {},
           breadcrumbs: event.breadcrumbs,
-          extra: {
-            error_message: event.message || event.exception?.values?.[0]?.value,
-            variables: params.variables || {},
-            custom_properties: params.customProperties || {},
-            user_details: params.userDetails || {},
-            exception: event.exception?.values?.map((e: any) => ({
-              type: e.type,
-              value: e.value,
-              stacktrace: e.stacktrace?.frames?.slice(-10),
-            })),
-            breadcrumbs: event.breadcrumbs,
-          },
-          sentryEvent: {
-            event_id: event.event_id,
-            timestamp: event.timestamp,
-            platform: event.platform,
-            release: event.release,
-            environment: event.environment,
-            sdk: event.sdk,
-          },
+          exceptions: event.exception?.values?.map((e: any) => ({
+            type: e.type,
+            value: e.value,
+            stacktrace: e.stacktrace?.frames?.slice(-10),
+          })),
+          eventId: event.event_id,
+          timestamp: event.timestamp,
+          platform: event.platform,
+          release: event.release,
+          environment: event.environment,
+          sdk: event.sdk,
         };
 
-        const domainName = params.domainName;
-        if (domainName) {
-          try {
-            await fetch(
-              `https://${domainName}/api/internal/spotcheck/sdkErrors`,
-              {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-              },
-            );
-          } catch (loggingError) {
-            // Silent fail
+        // Lazy require to break circular dependency (sentry <-> executables)
+        const { execute } = require('./executables');
+        const result = await execute('sentry.processSentryError', {
+          event: normalizedEvent,
+          sdkType: 'react-native',
+          sdkVersion: '1.0.0',
+        });
+
+        // Fallback: if backend functions not loaded yet, send directly
+        if (!result) {
+          const domainName = spotcheckStore.getState().SpotCheckState?.params?.domainName;
+          if (domainName) {
+            fetch(`https://${domainName}/api/internal/spotcheck/sdkErrors`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                errorMessage: normalizedEvent.errorMessage,
+                sdkType: 'react-native',
+                sdkVersion: '1.0.0',
+                tags: {
+                  ...normalizedEvent.tags,
+                  error_priority: 'P0',
+                  severity: 'CRITICAL',
+                  errorType: 'ATOMIC_FUNCTION_ERROR',
+                },
+              }),
+            }).catch(() => {});
           }
         }
 
@@ -196,7 +180,7 @@ export const captureP0Error = (
         eventScope.setExtra(k, v);
       });
     }
-
+    
     eventScope.captureException(error);
   }
 };
